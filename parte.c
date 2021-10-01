@@ -19,6 +19,7 @@
 volatile int start = 0;
 volatile int end = 0;
 volatile int period = 0;
+volatile int spacePeriod = 0;
 volatile int state = 0;
 volatile int i = 0;
 char string1[25];
@@ -38,6 +39,7 @@ void Initialize(){
 	TCCR1B |= (1<<CS10);
 	TCCR1B &= ~(1<<CS11);
 	TCCR1B |= (1<<CS12);
+	
 	
 	//set timer to normal
 	TCCR1A &= ~(1<<WGM10);
@@ -64,8 +66,6 @@ void FindResult(){
 		state = 0;	
 	}else if(period >= 3125 && period < 6250){
 		state = 1;
-	}else if(period >= 6250){
-		state = 2;
 	}
 }
 
@@ -152,25 +152,20 @@ char decode(char String[]){
 
 void printR(){
 	if(state == 0){
-		//sprintf(string1,"dot %u\n", period);
 		//turn on and of led
 		PORTB |= (1<<PORTB5);
 		_delay_ms(30);
 		PORTB &= ~(1<<PORTB5);
 		
-		//morse[0] = '.';
 		strcat(morse,".");
  	}else if(state == 1){
-		//sprintf(string1,"dash %u\n", period);
 		//turn on and of led
 		PORTB |= (1<<PORTB4);
 		_delay_ms(30);
 		PORTB &= ~(1<<PORTB4);
 		
-		//morse[0] = '-';
 		strcat(morse,"-");
 	}else{
-		//sprintf(string1,"space %u\n", period);
 		letter = decode(morse);
 		sprintf(string1,"%c\n", letter);
 		UART_putstring(string1);
@@ -181,6 +176,7 @@ void printR(){
 ISR(TIMER1_CAPT_vect){
 	i = 0;
 	period = TCNT1;
+	spacePeriod = 0;
 	if(!PINB & (1<<DDB0)){	//press button
 		start = TCNT1;
 		i=1;
@@ -207,5 +203,12 @@ int main(void)
 	Initialize();
 	while (1)
 	{
+		spacePeriod = TCNT1;
+		//I will use 6250*4=25000 becasue 0.4s is too fast
+		if(spacePeriod > 25000){
+			state = 2;
+			printR();
+			TCNT1 = 0;
+		}
 	}
 }
