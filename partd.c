@@ -20,6 +20,7 @@ volatile int end = 0;
 volatile int period = 0;
 volatile int state = 0;
 volatile int i = 0;
+volatile int spacePeriod = 0;
 char string1[25];
 
 void Initialize(){
@@ -56,8 +57,6 @@ void FindResult(){
 		state = 0;
 	}else if(period >= 3125 && period < 6250){
 		state = 1;
-	}else if(period >= 6250){
-		state = 2;
 	}
 }
 
@@ -75,6 +74,7 @@ void printR(){
 ISR(TIMER1_CAPT_vect){
 	i = 0;
 	period = TCNT1;
+	spacePeriod;
 	if(!PINB & (1<<DDB0)){	//press button
 		start = TCNT1;
 		i=1;
@@ -101,5 +101,12 @@ int main(void)
 	Initialize();
 	while (1)
 	{
+		spacePeriod = TCNT1;
+		//I will use 6250*4=25000 becasue 0.4s is too fast
+		if(spacePeriod > 25000){
+			state = 2;
+			printR();
+			TCNT1 = 0;
+		}
 	}
 }
