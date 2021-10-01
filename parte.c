@@ -42,8 +42,8 @@ void Initialize(){
 	//set timer to normal
 	TCCR1A &= ~(1<<WGM10);
 	TCCR1A &= ~(1<<WGM11);
-	TCCR1A &= ~(1<<WGM12);
-	TCCR1A &= ~(1<<WGM13);
+	TCCR1B &= ~(1<<WGM12);
+	TCCR1B &= ~(1<<WGM13);
 	
 	TCCR1B &= ~(1<<ICES1);	//looking for falling edge
 	
